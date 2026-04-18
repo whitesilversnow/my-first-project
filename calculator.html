@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>電卓</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .calculator {
+    background: #1e1e2e;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 320px;
+  }
+  .display {
+    background: #0f0f1a;
+    color: #fff;
+    font-size: 2.5rem;
+    text-align: right;
+    padding: 20px 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    min-height: 80px;
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    padding: 20px;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #313244;
+    color: #fff;
+    transition: transform 0.05s, background 0.2s;
+  }
+  button:hover { background: #45475a; }
+  button:active { transform: scale(0.95); }
+  .op { background: #f38ba8; color: #1e1e2e; }
+  .op:hover { background: #eb6f92; }
+  .eq { background: #a6e3a1; color: #1e1e2e; grid-column: span 2; }
+  .eq:hover { background: #8fd88a; }
+  .clear { background: #f9e2af; color: #1e1e2e; }
+  .clear:hover { background: #e8d196; }
+</style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="clear" onclick="clearAll()">C</button>
+      <button class="clear" onclick="backspace()">←</button>
+      <button class="op" onclick="append('%')">%</button>
+      <button class="op" onclick="append('/')">÷</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button class="op" onclick="append('*')">×</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button class="op" onclick="append('-')">−</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button class="op" onclick="append('+')">+</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button class="eq" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+<script>
+  const display = document.getElementById('display');
+  let current = '';
+
+  function refresh() {
+    display.textContent = current === '' ? '0' : current.replace(/\*/g, '×').replace(/\//g, '÷');
+  }
+
+  function append(v) {
+    if (current === 'Error') current = '';
+    const ops = ['+', '-', '*', '/', '%'];
+    if (ops.includes(v) && ops.includes(current.slice(-1))) {
+      current = current.slice(0, -1) + v;
+    } else {
+      current += v;
+    }
+    refresh();
+  }
+
+  function clearAll() {
+    current = '';
+    refresh();
+  }
+
+  function backspace() {
+    if (current === 'Error') current = '';
+    else current = current.slice(0, -1);
+    refresh();
+  }
+
+  function calculate() {
+    try {
+      if (current === '') return;
+      const result = Function('"use strict";return (' + current + ')')();
+      if (!isFinite(result)) throw new Error();
+      current = String(Math.round(result * 1e10) / 1e10);
+    } catch {
+      current = 'Error';
+    }
+    refresh();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const k = e.key;
+    if (/[0-9.+\-*/%]/.test(k)) append(k);
+    else if (k === 'Enter' || k === '=') { e.preventDefault(); calculate(); }
+    else if (k === 'Backspace') backspace();
+    else if (k === 'Escape') clearAll();
+  });
+</script>
+</body>
+</html>
